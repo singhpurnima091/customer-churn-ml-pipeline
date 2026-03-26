@@ -11,7 +11,7 @@ st.markdown("Predict whether a customer will churn using Machine Learning 🚀")
 # Load model
 model = joblib.load("models/churn_pipeline.pkl")
 
-st.title("📊 Customer Churn Prediction App")
+
 
 # -------------------------------
 # Inputs

@@ -1,3 +1,7 @@
+st.set_page_config(page_title="Churn Prediction App", layout="centered")
+
+st.markdown("## 📊 Customer Churn Prediction")
+st.markdown("Predict whether a customer will churn using Machine Learning 🚀")
 import streamlit as st
 import pandas as pd
 import joblib

@@ -1,3 +1,17 @@
+## 🌐 Live Demo
+https://customer-churn-ml-pipeline-epgfkj8sakrjaat5dvvbvq.streamlit.app/
+
+## 🚀 Features
+- End-to-end ML pipeline
+- Streamlit web app
+- FastAPI backend
+- Real-time prediction
+
+## 🧠 Tech Stack
+- Python
+- Scikit-learn
+- Streamlit
+- FastAPI
 # Customer Churn Prediction ML Pipeline
 
 This project builds a Machine Learning pipeline to predict customer churn using telecom customer data.

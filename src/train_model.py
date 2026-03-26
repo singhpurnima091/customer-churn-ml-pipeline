@@ -1,55 +1,80 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from sklearn.linear_model import LogisticRegression
 import joblib
 
-print("Loading processed dataset...")
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
 
+# -------------------------------
+# Load data
+# -------------------------------
 df = pd.read_csv("data/processed.csv")
 
-# Drop columns not needed for prediction
-drop_cols = [
-    "Country","State","City","Zip Code","Lat Long","Latitude","Longitude",
-    "Churn Score","CLTV","Churn Reason","Churn Label"
-]
+# -------------------------------
+# Drop unnecessary columns
+# -------------------------------
+df = df.drop([
+    "Count", "Country", "State", "City", "Zip Code",
+    "Lat Long", "Latitude", "Longitude"
+], axis=1)
 
-for col in drop_cols:
-    if col in df.columns:
-        df = df.drop(col, axis=1)
-
-# Encode categorical columns
-print("Encoding categorical features...")
-
-le = LabelEncoder()
-
-for column in df.columns:
-    if df[column].dtype == "object":
-        df[column] = le.fit_transform(df[column])
-
-# Target variable
+# -------------------------------
+# Target & Features
+# -------------------------------
 y = df["Churn Value"]
 
-# Features
-X = df.drop("Churn Value", axis=1)
+X = df.drop([
+    "Churn Value", "Churn Label",
+    "Churn Score", "CLTV", "Churn Reason"
+], axis=1)
 
-print("Splitting dataset...")
+# -------------------------------
+# Feature groups
+# -------------------------------
+num_features = ["Tenure Months", "Monthly Charges", "Total Charges"]
+cat_features = [col for col in X.columns if col not in num_features]
 
+# -------------------------------
+# Pipelines
+# -------------------------------
+num_pipeline = Pipeline([
+    ("imputer", SimpleImputer(strategy="mean")),
+    ("scaler", StandardScaler())
+])
+
+cat_pipeline = Pipeline([
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("encoder", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocessor = ColumnTransformer([
+    ("num", num_pipeline, num_features),
+    ("cat", cat_pipeline, cat_features)
+])
+
+# -------------------------------
+# Final Pipeline
+# -------------------------------
+pipeline = Pipeline([
+    ("preprocessor", preprocessor),
+    ("model", LogisticRegression(max_iter=2000))
+])
+
+# -------------------------------
+# Train
+# -------------------------------
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-print("Training model...")
+pipeline.fit(X_train, y_train)
 
-model = LogisticRegression(max_iter=1000)
-model.fit(X_train, y_train)
+# -------------------------------
+# Save
+# -------------------------------
+joblib.dump(pipeline, "models/churn_pipeline.pkl")
 
-accuracy = model.score(X_test, y_test)
-
-print("Model Accuracy:", accuracy)
-
-print("Saving model...")
-
-joblib.dump(model, "models/churn_model.pkl")
-
-print("Model training completed and saved.")
+print("✅ Model trained & saved successfully!")
